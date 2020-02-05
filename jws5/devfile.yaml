@@ -1,0 +1,113 @@
+---
+apiVersion: 1.0.0
+metadata:
+  name: java-webserver-terasoluna
+  generateName: che-terasoluna-
+attributes:
+  persistVolumes: 'true'
+projects:
+  -
+    name: terasoluna-sample
+    source:
+      type: git
+      location: "https://github.com/javaflavor/terasoluna-tourreservation.git"
+components:
+  -
+    type: chePlugin
+    id: redhat/java/latest
+    memoryLimit: 1512Mi
+  -
+    type: dockerimage
+    alias: jws
+    image: image-registry.openshift-image-registry.svc:5000/crw/stacks-java-jws5:latest
+    env:
+      - name: MAVEN_CONFIG
+        value: /home/user/.m2
+      - name: MAVEN_OPTS
+        value: "-XX:MaxRAMPercentage=50 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10
+          -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90
+          -Dsun.zip.disableMemoryMapping=true -Xms20m -Djava.security.egd=file:/dev/./urandom
+          -Duser.home=/home/user"
+      - name: JAVA_OPTS
+        value: "-XX:MaxRAMPercentage=50 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10
+          -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90
+          -Dsun.zip.disableMemoryMapping=true -Xms20m -Djava.security.egd=file:/dev/./urandom"
+      - name: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=50 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10
+          -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90
+          -Dsun.zip.disableMemoryMapping=true -Xms20m -Djava.security.egd=file:/dev/./urandom"
+    memoryLimit: 1024Mi
+    endpoints:
+      - name: '8080/tcp'
+        port: 8080
+      - name: '8000/tcp'
+        port: 8000
+    mountSources: true
+    volumes:
+      - name: m2
+        containerPath: /home/user/.m2/repository/
+commands:
+  -
+    name: initialize database.
+    actions:
+      -
+        type: exec
+        component: jws
+        command: "mvn -f terasoluna-tourreservation-initdb/pom.xml sql:execute"
+        workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
+  -
+    name: maven install
+    actions:
+      -
+        type: exec
+        component: jws
+        command: "mvn clean install -DskipTests=true"
+        workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
+  -
+    name: copy war file.
+    actions:
+      -
+        type: exec
+        component: jws
+        command: "rm -fr /deployments/ROOT* && find . -name '*.war' | head -1 | xargs -r -I{} cp -v {} /deployments/ROOT.war"
+        workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
+  -
+    name: Start jws application server
+    actions:
+      -
+        type: exec
+        component: jws
+        command: "/opt/jws-5.0/tomcat/bin/catalina.sh run"
+        workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
+  -
+    name: Start jws application server (debug mode).
+    actions:
+      -
+        type: exec
+        component: jws
+        command: "CATALINA_OPTS='-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n' /opt/jws-5.0/tomcat/bin/catalina.sh run"
+        workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
+  -
+    name: Stop jws application server
+    actions:
+      -
+        type: exec
+        component: jws
+        command: "/opt/jws-5.0/tomcat/bin/catalina.sh stop"
+        workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
+  -
+    name: Debug remote jws application server.
+    actions:
+      - type: vscode-launch
+        referenceContent: |
+          {
+            "version": "0.2.0",
+            "configurations": [
+              {
+                  "type": "java",
+                  "name": "Debug (Attach)",
+                  "request": "attach",
+                  "hostName": "localhost",
+                  "port": 8000
+              }]
+          }
