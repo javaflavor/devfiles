@@ -19,7 +19,7 @@ components:
   -
     type: dockerimage
     alias: jws
-    image: image-registry.openshift-image-registry.svc:5000/crw/che-java11-maven:latest
+    image: image-registry.openshift-image-registry.svc:5000/crw/che-java11-jws-maven:latest
     env:
       - name: MAVEN_CONFIG
         value: /home/user/.m2
