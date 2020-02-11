@@ -11,6 +11,7 @@ projects:
     source:
       type: git
       location: "https://github.com/javaflavor/terasoluna-tourreservation.git"
+      branch: release/5.4.1.RELEASE
 components:
   -
     type: chePlugin
@@ -48,7 +49,7 @@ components:
         containerPath: /home/user/.m2/repository/
 commands:
   -
-    name: initialize database.
+    name: initialize database
     actions:
       -
         type: exec
@@ -61,34 +62,34 @@ commands:
       -
         type: exec
         component: jws
-        command: "mvn clean install -DskipTests=true"
+        command: "mvn clean install -DskipTests=true -Popenshift"
         workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
   -
-    name: copy war file.
+    name: copy war file
     actions:
       -
         type: exec
         component: jws
-        command: "rm -fr /deployments/ROOT* && find . -name '*.war' | head -1 | xargs -r -I{} cp -v {} /deployments/ROOT.war"
+        command: "rm -fr /opt/jws-5.0/tomcat/webapps/ROOT* && find . -name '*.war' | head -1 | xargs -r -I{} cp -v {} /opt/jws-5.0/tomcat/webapps/ROOT.war"
         workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
   -
-    name: Start jws application server
+    name: Start jws
     actions:
       -
         type: exec
         component: jws
-        command: "/opt/jws-5.0/tomcat/bin/catalina.sh run"
+        command: "CATALINA_OPTS='-Dspring.profiles.active=dev' /opt/jws-5.0/tomcat/bin/catalina.sh run"
         workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
   -
-    name: Start jws application server (debug mode).
+    name: Start jws (debug mode)
     actions:
       -
         type: exec
         component: jws
-        command: "CATALINA_OPTS='-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n' /opt/jws-5.0/tomcat/bin/catalina.sh run"
+        command: "CATALINA_OPTS='-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n -Dspring.profiles.active=dev' /opt/jws-5.0/tomcat/bin/catalina.sh run"
         workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
   -
-    name: Stop jws application server
+    name: Stop jws
     actions:
       -
         type: exec
