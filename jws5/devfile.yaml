@@ -2,7 +2,7 @@
 apiVersion: 1.0.0
 metadata:
   name: java-webserver-terasoluna
-  generateName: che-terasoluna-
+  generateName: jws5-java8-
 attributes:
   persistVolumes: 'true'
 projects:
