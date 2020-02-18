@@ -54,7 +54,7 @@ commands:
       -
         type: exec
         component: jws
-        command: "mvn -f terasoluna-tourreservation-initdb/pom.xml sql:execute"
+        command: "cp /projects/m2/settings.xml /home/jboss/.m2/ && mvn -f terasoluna-tourreservation-initdb/pom.xml sql:execute"
         workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
   -
     name: maven install
@@ -62,7 +62,7 @@ commands:
       -
         type: exec
         component: jws
-        command: "mvn clean install -DskipTests=true -Popenshift"
+        command: "cp /projects/m2/settings.xml /home/jboss/.m2/ && mvn clean install -DskipTests=true -Popenshift"
         workdir: ${CHE_PROJECTS_ROOT}/terasoluna-sample
   -
     name: copy war file
